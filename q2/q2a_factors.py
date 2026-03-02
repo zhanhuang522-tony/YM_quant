@@ -173,14 +173,18 @@ def main():
     ROOT = Path(__file__).resolve().parent.parent
     DATA_DIR = ROOT / "data"
 
-    # 若有缓存数据则用，否则生成合成数据演示
-    raw_csv = DATA_DIR / "btc_1h_raw.csv"
-    if raw_csv.exists():
-        print(f"Using cached BTC data from {raw_csv}")
-        df = pd.read_csv(raw_csv, parse_dates=["open_time"])
-        df["open_time"] = pd.to_datetime(df["open_time"], utc=True)
-        df["close"] = pd.to_numeric(df["close"], errors="coerce")
-        close = df.set_index("open_time")["close"].dropna()
+    # 优先使用已有缓存（现货或合约均可）
+    for candidate in [
+        DATA_DIR / "raw" / "hourly" / "BTCUSDT_1h.csv",
+        DATA_DIR / "btc_1h_raw.csv",
+    ]:
+        if candidate.exists():
+            print(f"Using cached BTC data from {candidate}")
+            df = pd.read_csv(candidate, parse_dates=["open_time"])
+            df["open_time"] = pd.to_datetime(df["open_time"], utc=True)
+            df["close"] = pd.to_numeric(df["close"], errors="coerce")
+            close = df.set_index("open_time")["close"].dropna()
+            break
     else:
         print("No cached data found, generating synthetic price series (N=500)")
         np.random.seed(42)
@@ -201,9 +205,12 @@ def main():
         print(f"  TC_n{n:>2}: 窗口={11*n+1:>4}  有效={len(valid):>5}  "
               f"首个NaN位置={tc.first_valid_index()}  "
               f"均值={valid.mean():.4f}  max={valid.max():.4f}")
-    print(f"\n  前 {11*6+1} 行（TC_n6 窗口大小，应全为 NaN）:")
+    # 边界验证：窗口=67时，前66行应为NaN，第67行（index 66）为首个有效值
     tc6 = tc_factor(close, 6)
-    print(f"  NaN 行数: {tc6.iloc[:11*6+1].isna().sum()} / {11*6+1}")
+    W6 = 11 * 6 + 1
+    print(f"\n  边界验证 TC_n6（窗口={W6}）:")
+    print(f"    前 {W6-1} 行全为 NaN: {tc6.iloc[:W6-1].isna().all()}")
+    print(f"    第 {W6} 行有值:        {not pd.isna(tc6.iloc[W6-1])}")
 
     # ── PWMA 因子 ────────────────────────────
     print("\n[PWMA 因子] 帕斯卡加权移动平均")
@@ -228,17 +235,16 @@ def main():
     cfo14 = cfo_factor(close, 14)
     print(cfo14.head(20).to_string())
 
-    # ── 综合输出前几行 ────────────────────────
+    # ── 综合输出（三因子都有值的最早行开始）────
     print("\n" + "=" * 60)
-    print("三因子合并（前 80 行，仅显示有值部分）")
+    print("三因子合并（首个共同有值行起，展示 10 行）")
     print("=" * 60)
     result = pd.DataFrame({
-        "close": close.values[:80] if isinstance(close.index, pd.RangeIndex) or not isinstance(close.index[0], pd.Timestamp) else close.iloc[:80].values,
-        "TC_n12": tc_factor(close, 12).values[:80],
-        "PWMA_10": pwma_factor(close, 10).values[:80],
-        "CFO_14": cfo_factor(close, 14).values[:80],
-    })
-    # 只打印都有值的行
+        "close":   close.values,
+        "TC_n12":  tc_factor(close, 12).values,
+        "PWMA_10": pwma_factor(close, 10).values,
+        "CFO_14":  cfo_factor(close, 14).values,
+    }, index=close.index)
     print(result.dropna().head(10).to_string(float_format="%.4f"))
 
 

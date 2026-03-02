@@ -34,10 +34,10 @@
 
 ```
 q1/
-├── q1a_btc_predict.py      # 题目1A：BTC 1h 价格预测（Ridge + LightGBM）
+└── q1a_btc_predict.py      # 题目1：BTC 1h 价格预测（Ridge + LightGBM）
 q2/
 ├── q2a_factors.py          # 题目2A：TC / PWMA / CFO 因子实现
-└── q2b_fama_macbeth.py     # 题目2B：做 对2AFama-MacBeth 检验
+└── q2b_fama_macbeth.py     # 题目2B：对2A因子做 Fama-MacBeth 检验
 q3/
 └── strategy_design.md      # 题目3：多因子中性策略设计
 ```
@@ -46,22 +46,21 @@ q3/
 
 ```bash
 # 安装依赖
-pip install ccxt pandas numpy scikit-learn lightgbm scipy httpx
+pip install pandas numpy scikit-learn lightgbm scipy httpx
 
-# 题目 1A（自动拉取数据并预测）
+# 题目 1（自动拉取数据并预测下一小时价格）
 python q1/q1a_btc_predict.py
 
-# 题目 2A（因子验证）
+# 题目 2A（TC / PWMA / CFO 因子计算与验证）
 python q2/q2a_factors.py
 
-# 题目 2B（需先运行 1B 获取面板数据）
+# 题目 2B（Fama-MacBeth，自动拉取合约面板数据）
 python q2/q2b_fama_macbeth.py
 ```
 
 ## 输出
 
-运行 1A 后结果保存至 `outputs/q1a/`：
-- `cv_summary.csv` — 5折CV各模型IC/ICIR/方向准确率/Sharpe汇总
-- `cv_folds.csv` — 每折详细指标
-- `holdout_metrics.csv` — Holdout集评估
-- `next_hour_prediction.csv` — 下一小时预测价格
+| 脚本 | 输出目录 | 主要文件 |
+|------|---------|---------|
+| q1a_btc_predict.py | `outputs/q1a/` | cv_summary.csv、holdout_metrics.csv、next_hour_prediction.csv |
+| q2b_fama_macbeth.py | `outputs/q2b/` | fama_macbeth_summary.csv、quintile_sharpe.csv |
