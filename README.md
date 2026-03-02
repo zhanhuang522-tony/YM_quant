@@ -35,10 +35,9 @@
 ```
 q1/
 ├── q1a_btc_predict.py      # 题目1A：BTC 1h 价格预测（Ridge + LightGBM）
-└── q1b_fama_macbeth.py     # 题目1B：对1A因子做 Fama-MacBeth 检验
 q2/
 ├── q2a_factors.py          # 题目2A：TC / PWMA / CFO 因子实现
-└── q2b_fama_macbeth.py     # 题目2B：对2A因子做 Fama-MacBeth 检验
+└── q2b_fama_macbeth.py     # 题目2B：做 对2AFama-MacBeth 检验
 q3/
 └── strategy_design.md      # 题目3：多因子中性策略设计
 ```
@@ -51,9 +50,6 @@ pip install ccxt pandas numpy scikit-learn lightgbm scipy httpx
 
 # 题目 1A（自动拉取数据并预测）
 python q1/q1a_btc_predict.py
-
-# 题目 1B（需先运行 1A 或已有面板数据）
-python q1/q1b_fama_macbeth.py
 
 # 题目 2A（因子验证）
 python q2/q2a_factors.py
