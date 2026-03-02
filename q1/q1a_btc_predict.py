@@ -379,7 +379,7 @@ def main():
         print(f"  当前价格 ({last_time}):    ${last_close:>12,.2f}")
         print(f"  预测价格 ({next_time}): ${next_price:>12,.2f}  "
               f"({price_chg:+.2f} / {price_chg_pct:+.4f}%)")
-        print(f"  方向: {'↑ 看多' if next_pred_logret > 0 else '↓ 看空'}")
+        print(f"  方向: {'看多' if next_pred_logret > 0 else '看空'}")
 
         holdout_rows.append({"model": mname, **m_ho})
         pred_rows.append({
