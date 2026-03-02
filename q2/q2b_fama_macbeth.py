@@ -147,6 +147,27 @@ def build_panel_factors(panel: pd.DataFrame) -> pd.DataFrame:
 # Fama-MacBeth（与 Q1B 相同框架）
 # ─────────────────────────────────────────────
 
+def _cross_section_normalize(sub: pd.DataFrame, factor_cols: list[str]) -> pd.DataFrame:
+    """
+    截面标准化：
+    1. Winsorize 双侧 10%（截面样本少时用 10%，比 1% 更稳健）
+    2. Rank → 转为 [-0.5, 0.5] 均匀分布，消除极端值影响
+    """
+    sub = sub.copy()
+    for f in factor_cols:
+        col = sub[f].dropna()
+        if len(col) < 3:
+            continue
+        lo, hi = col.quantile(0.10), col.quantile(0.90)
+        sub[f] = sub[f].clip(lo, hi)
+        # rank 标准化到 [-0.5, 0.5]
+        ranked = sub[f].rank(method="average", na_option="keep")
+        n_valid = ranked.notna().sum()
+        if n_valid > 1:
+            sub[f] = (ranked - 1) / (n_valid - 1) - 0.5
+    return sub
+
+
 def fama_macbeth(panel_feat: pd.DataFrame, factor_cols: list[str],
                  min_obs: int = 8) -> pd.DataFrame:
     needed = factor_cols + ["fwd_ret", "open_time", "symbol"]
@@ -159,6 +180,8 @@ def fama_macbeth(panel_feat: pd.DataFrame, factor_cols: list[str],
         sub = df[df["open_time"] == t]
         if len(sub) < min_obs:
             continue
+        # 截面 winsorize + rank 标准化
+        sub = _cross_section_normalize(sub, factor_cols)
         y = sub["fwd_ret"].values
         X = sub[factor_cols].values
         X_aug = np.column_stack([np.ones(len(X)), X])
