@@ -1,0 +1,2 @@
+model,as_of_time,current_price_usd,pred_time,pred_price_usd,pred_log_ret,pred_chg_pct,direction
+Ridge,2026-03-01 22:00:00+00:00,65268.71,2026-03-01 23:00:00+00:00,65285.44,0.0002563383849281142,0.025637,long

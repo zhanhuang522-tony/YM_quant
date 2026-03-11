@@ -1,0 +1,2 @@
+[console_scripts]
+btc-predict = btc_forecast.cli:app

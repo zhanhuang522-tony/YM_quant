@@ -6,5 +6,7 @@ __pycache__/
 data/raw/
 data/processed/
 data/*.csv
-outputs/
+outputs/*
+!outputs/q1a/
+!outputs/q2b/
 *.parquet

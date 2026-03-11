@@ -1,0 +1,64 @@
+data:
+  timeframe: "1h"
+  start_utc: "2025-03-02T00:00:00Z"
+  end_utc: "2026-03-01T23:00:00Z"
+  target_symbol: "BTCUSDT"
+  symbols: ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "LTCUSDT"]
+  raw_dir: "data/raw/hourly"
+  target_raw_path: "data/raw/hourly/target_1h.csv"
+  panel_raw_path: "data/raw/hourly/panel_1h.csv"
+
+features:
+  target_col: "target_log_ret_1h"
+  feature_path: "data/processed/btc_1h_features.parquet"
+  panel_feature_path: "data/processed/panel_1h_features.parquet"
+
+cv:
+  train_hours: 2160   # 90 days
+  valid_hours: 168    # 7 days
+  step_hours: 168     # 7 days
+  holdout_hours: 720  # 30 days
+
+model:
+  enabled: ["ols", "ridge", "lasso", "lightgbm"]
+  random_seed: 42
+  ridge_alpha: 1.0
+  lasso_alpha: 0.0005
+  prediction_blend_weight: 0.1
+  lightgbm_params:
+    objective: huber
+    metric: l1
+    verbosity: -1
+    num_leaves: 31
+    learning_rate: 0.03
+    n_estimators: 500
+    colsample_bytree: 0.8
+    subsample: 0.8
+    subsample_freq: 5
+    min_child_samples: 40
+
+fama_macbeth:
+  factor_columns:
+    - log_ret_1h
+    - log_ret_3h
+    - log_ret_6h
+    - vol_24h
+    - rv_24h
+    - volume_over_ma_24h
+    - rsi_14
+    - macd_hist
+    - bb_width_20
+  min_cross_section: 6
+  quantiles: 5
+
+outputs:
+  backtest_metrics_path: "outputs/metrics/backtest_metrics.csv"
+  backtest_detail_path: "outputs/metrics/backtest_predictions.csv"
+  model_ranking_path: "outputs/metrics/model_ranking.csv"
+  holdout_metrics_path: "outputs/metrics/holdout_metrics.csv"
+  next_prediction_path: "outputs/predictions/next_hour_prediction.json"
+  model_artifact_path: "outputs/models/best_model.pkl"
+  feature_importance_path: "outputs/metrics/feature_importance.csv"
+  fama_beta_ts_path: "outputs/fama/beta_timeseries.csv"
+  fama_summary_path: "outputs/fama/fama_macbeth_summary.csv"
+  fama_group_backtest_path: "outputs/fama/group_backtest.csv"
